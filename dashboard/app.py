@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 
 # Load model
-model = joblib.load("model.pkl")
+model = joblib.load("dashboard/model.pkl")
 
 # Page settings
 st.set_page_config(
