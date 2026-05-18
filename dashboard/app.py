@@ -83,7 +83,62 @@ if st.button("Predict Fraud Risk"):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+# ==============================
+# CSV Upload Fraud Detection
+# ==============================
 
+st.subheader("📂 Upload Transactions CSV")
+
+uploaded_file = st.file_uploader(
+    "Upload CSV File",
+    type=["csv"]
+)
+
+if uploaded_file is not None:
+
+    upload_df = pd.read_csv(uploaded_file)
+
+    st.write("Uploaded Data Preview")
+
+    st.dataframe(upload_df.head())
+
+    # Check required columns
+    required_cols = ["TransactionAmt", "HourOfDay"]
+
+    if all(col in upload_df.columns for col in required_cols):
+
+        # Predict probabilities
+        fraud_probs = model.predict_proba(
+            upload_df[required_cols]
+        )[:, 1]
+
+        upload_df["FraudProbability"] = fraud_probs
+
+        # Risk tier
+        def risk_label(prob):
+
+            if prob >= 0.75:
+                return "Critical"
+
+            elif prob >= 0.40:
+                return "Suspicious"
+
+            else:
+                return "Safe"
+
+        upload_df["RiskLevel"] = upload_df[
+            "FraudProbability"
+        ].apply(risk_label)
+
+        st.subheader("Prediction Results")
+
+        st.dataframe(upload_df.head())
+
+    else:
+
+        st.error(
+            "CSV must contain TransactionAmt and HourOfDay columns"
+        )
 # Footer
 st.markdown("---")
 
