@@ -1,53 +1,90 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import plotly.express as px
+
+# Page configuration
+st.set_page_config(
+    page_title="Fraud Detection Dashboard",
+    page_icon="🚨",
+    layout="wide"
+)
 
 # Load model
 model = joblib.load("dashboard/model.pkl")
 
-# Page settings
-st.set_page_config(
-    page_title="Fraud Detection Dashboard",
-    page_icon="🚨"
-)
+# Title
+st.title("🚨 Real-Time Fraud Detection System")
 
-st.title("Real-Time Fraud Detection System")
-
-st.write("Fraud Prediction Dashboard")
+st.markdown("""
+This dashboard predicts fraudulent financial transactions using Machine Learning.
+""")
 
 # Sidebar
-st.sidebar.header("Transaction Details")
+st.sidebar.header("Transaction Input")
 
 amount = st.sidebar.number_input(
     "Transaction Amount",
+    min_value=1.0,
     value=100.0
 )
 
 hour = st.sidebar.slider(
-    "Hour of Transaction",
+    "Hour Of Day",
     0,
     23,
     12
 )
 
-# Input dataframe
+# Create dataframe
 input_data = pd.DataFrame({
     "TransactionAmt": [amount],
     "HourOfDay": [hour]
 })
 
-# Prediction
+# Predict
 if st.button("Predict Fraud Risk"):
 
-    prob = model.predict_proba(input_data)[0][1]
+    probability = model.predict_proba(input_data)[0][1]
 
-    st.write("Fraud Probability:", round(prob, 4))
+    st.subheader("Prediction Result")
 
-    if prob >= 0.75:
-        st.error("Critical Risk Transaction")
+    st.metric(
+        label="Fraud Probability",
+        value=f"{probability:.2%}"
+    )
 
-    elif prob >= 0.40:
-        st.warning("Suspicious Transaction")
+    # Risk categories
+    if probability >= 0.75:
+        risk = "Critical Risk"
+        st.error("🔴 Critical Risk Transaction")
+
+    elif probability >= 0.40:
+        risk = "Suspicious"
+        st.warning("🟡 Suspicious Transaction")
 
     else:
-        st.success(" Safe Transaction")
+        risk = "Safe"
+        st.success("🟢 Safe Transaction")
+
+    # Risk dataframe
+    chart_df = pd.DataFrame({
+        "Risk Category": ["Safe", "Suspicious", "Critical"],
+        "Value": [1-probability, probability/2, probability/2]
+    })
+
+    # Plotly donut chart
+    fig = px.pie(
+        chart_df,
+        names="Risk Category",
+        values="Value",
+        hole=0.5,
+        title="Fraud Risk Distribution"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# Footer
+st.markdown("---")
+
+st.caption("Built by Alina | AI & Data Analytics Capstone Project")
