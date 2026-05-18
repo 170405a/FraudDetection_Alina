@@ -83,9 +83,7 @@ if st.button("Predict Fraud Risk"):
     )
 
     st.plotly_chart(fig, use_container_width=True)
-# ==============================
-# CSV Upload Fraud Detection
-# ==============================
+
 
 st.subheader("📂 Upload Transactions CSV")
 
@@ -143,3 +141,18 @@ if uploaded_file is not None:
 st.markdown("---")
 
 st.caption("Built by Alina | AI & Data Analytics Capstone Project")
+
+
+st.markdown("---")
+
+st.subheader("🧠 Explainable AI Insights")
+
+st.write("""
+SHAP explains which features contribute most toward fraud prediction.
+This helps fraud analysts understand model decisions clearly.
+""")
+
+st.image(
+    "dashboard/shap_summary.png",
+    caption="SHAP Global Feature Importance"
+)
